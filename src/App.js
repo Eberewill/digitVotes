@@ -65,6 +65,7 @@ function App() {
         {error && <Message variant="danger">{error}</Message>}
         {votesError && <Message variant="danger">{votesError}</Message>}
         {voteError && <Message variant="danger">{voteError}</Message>}
+
         <Container>
           <Form>
             <Form.Group controlId="exampleForm.ControlSelect1">
@@ -119,29 +120,33 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>{proposalId && proposalId}</td>
-                <td style={{ color: "green" }}>{yesVotes && yesVotes}</td>
-                <td style={{ color: "red" }}>{noVotes && noVotes}</td>
-                <td>
-                  {mVotes && mVotes == 1 ? (
-                    <>
-                      {" "}
-                      <p style={{ color: "red" }}>Negative</p>{" "}
-                    </>
-                  ) : mVotes == 2 ? (
-                    <>
-                      {" "}
-                      <p style={{ color: "green" }}>Positive</p>{" "}
-                    </>
-                  ) : (
-                    <>
-                      {" "}
-                      <span>Negative</span>{" "}
-                    </>
-                  )}
-                </td>
-              </tr>
+              {loading || loadingVotes ? (
+                <Loader />
+              ) : (
+                <tr>
+                  <td>{proposalId && proposalId}</td>
+                  <td style={{ color: "green" }}>{yesVotes && yesVotes}</td>
+                  <td style={{ color: "red" }}>{noVotes && noVotes}</td>
+                  <td>
+                    {mVotes && mVotes == 1 ? (
+                      <>
+                        {" "}
+                        <p style={{ color: "red" }}>Negative</p>{" "}
+                      </>
+                    ) : mVotes == 2 ? (
+                      <>
+                        {" "}
+                        <p style={{ color: "green" }}>Positive</p>{" "}
+                      </>
+                    ) : (
+                      <>
+                        {" "}
+                        <span>Not Voted Yet</span>{" "}
+                      </>
+                    )}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </Table>
           <Button
@@ -151,7 +156,7 @@ function App() {
             // }}
           >
             {" "}
-            Voting fee is {VOTE_FEE / 1000000000000000000} Eth
+            ! Voting fee is {VOTE_FEE / 1000000000000000000} Eth
           </Button>
         </Container>
       </main>

@@ -7,7 +7,7 @@ const NavBar = ({ account }) => {
         <Container>
           <Col>
             <Navbar.Brand>
-              Welcome <p style={{ color: "green" }}>{account}</p>{" "}
+              Welcome <p style={{ color: "teal" }}>{account}</p>{" "}
             </Navbar.Brand>
           </Col>
         </Container>
