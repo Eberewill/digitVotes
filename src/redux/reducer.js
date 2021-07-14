@@ -4,10 +4,10 @@ import {
   APP_ERROR,
   LOAD_BLOCKCHAIN_DATA_REQ,
   LOAD_BLOCKCHAIN_DATA_SUCCESS,
-  CREATE_TASKS_REQ,
-  CREATE_TASKS_SUCCESS,
-  TOGGLE_TASKS_REQ,
-  TOGGLE_TASKS_SUCCESS,
+  GET_VOTES_REQ,
+  GET_VOTES_RES,
+  CAST_VOTE_REQ,
+  CAST_VOTE_RES,
 } from "./constants";
 
 export const accountReducer = (
@@ -24,6 +24,7 @@ export const accountReducer = (
       };
     case APP_ERROR:
       return {
+        loading: false,
         error: action.payload,
       };
     default:
@@ -31,46 +32,79 @@ export const accountReducer = (
   }
 };
 
-export const blockChaiReducer = (
-  state = { loading: false, accounts: "", taskCount: "", todoList: {} },
+export const smartContractReducr = (
+  state = { loading: false, proposal: {} },
   action
 ) => {
   switch (action.type) {
     case LOAD_BLOCKCHAIN_DATA_REQ:
-      return { loding: true };
+      return { ...state, loding: true };
     case LOAD_BLOCKCHAIN_DATA_SUCCESS:
       return {
-        loding: false,
-        accounts: action.payload.accounts[0],
-        todoList: action.payload.todoList,
-        taskCount: action.payload.taskCount,
-        tasks: action.payload.tasks,
+        loading: false,
+        proposal: action.payload,
+      };
+    case APP_ERROR:
+      return {
+        error: action.payload,
+        loading: false,
+        ...state,
       };
     default:
       return state;
   }
 };
 
-export const createtaskReducer = (state = { tasks: [] }, action) => {
+export const votesReducer = (
+  state = {
+    loading: false,
+    votes: "",
+    yesVote: "",
+    proposalId: "",
+    VOTE_FEE: "",
+  },
+  action
+) => {
   switch (action.type) {
-    case CREATE_TASKS_REQ:
-      return { loding: true };
-    case CREATE_TASKS_SUCCESS:
+    case GET_VOTES_REQ:
+      return { ...state, loding: true };
+    case GET_VOTES_RES:
       return {
-        loding: false,
+        loading: false,
+        votes: action.payload.votes,
+        yesVotes: action.payload.yesVotes,
+        noVotes: action.payload.noVotes,
+        proposalId: action.payload.proposalId,
+        VOTE_FEE: action.payload.VOTE_FEE,
+      };
+    case APP_ERROR:
+      return {
+        error: action.payload,
+        loading: false,
+        ...state,
       };
     default:
       return state;
   }
 };
 
-export const toggleTaskReducer = (state = {}, action) => {
+export const castVoteReducer = (
+  state = { loading: false, reciept: "" },
+  action
+) => {
   switch (action.type) {
-    case TOGGLE_TASKS_REQ:
-      return { loding: true };
-    case TOGGLE_TASKS_SUCCESS:
+    case CAST_VOTE_REQ:
+      return { ...state, loading: true };
+    case CAST_VOTE_RES:
       return {
-        loding: false,
+        loading: false,
+        reciept: action.payload,
+      };
+    case APP_ERROR:
+      return {
+        error: action.payload,
+        loading: false,
+        ...state,
       };
     default:
       return state;

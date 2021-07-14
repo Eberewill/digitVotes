@@ -7,16 +7,15 @@ import {
 import {
   GET_USER_ACCOUNT_REQ,
   GET_USER_ACCOUNT_SUCCESS,
-  APP_ERROR,
-  LIST_TASKS_REQ,
-  LIST_TASKS_SUCCESS,
   LOAD_BLOCKCHAIN_DATA_REQ,
   LOAD_BLOCKCHAIN_DATA_SUCCESS,
-  CREATE_TASKS_REQ,
-  CREATE_TASKS_SUCCESS,
-  TOGGLE_TASKS_REQ,
-  TOGGLE_TASKS_SUCCESS,
+  APP_ERROR,
+  GET_VOTES_REQ,
+  GET_VOTES_RES,
+  CAST_VOTE_REQ,
+  CAST_VOTE_RES,
 } from "./constants";
+const web3 = new Web3(Web3.givenProvider);
 
 export const getUserWalletFromMetaMask = () => async (dispatch) => {
   try {
@@ -38,78 +37,120 @@ export const getUserWalletFromMetaMask = () => async (dispatch) => {
   }
 };
 
-export const loadBlockchainData = () => async (dispatch, getState) => {
+export const loadBlockchainData = () => async (dispatch) => {
   try {
     dispatch({
       type: LOAD_BLOCKCHAIN_DATA_REQ,
     });
-    const web3 = new Web3(Web3.givenProvider);
-    const todoList = new web3.eth.Contract(
+
+    const proposal = new web3.eth.Contract(
       PROPOSAL_SMART_CONTRACT_ABI,
       PROPOSAL_SMART_CONTRACT_ADD
     );
 
-    //get TodoList  tskCount property
-   // const taskCount = await todoList.methods.taskCount().call();
-
-    //const tasks = [];
-    //for (let i = 0; i <= taskCount; i++) {
-     // const eachTask = await todoList.methods.tasks(i).call();
-     // tasks.unshift(eachTask);
-    }
     dispatch({
       type: LOAD_BLOCKCHAIN_DATA_SUCCESS,
-      payload: { accounts, todoList, taskCount, tasks },
+      payload: proposal,
     });
   } catch (error) {
-    console.log(`Error In Catch ${error}`);
+    console.log(error);
+    dispatch({
+      type: APP_ERROR,
+      payload: `getUserWallet error: ${JSON.stringify(error.message)}`,
+    });
   }
 };
 
-export const createTask = (content) => async (dispatch, getState) => {
+export const getVotes = () => async (dispatch, getState) => {
   try {
     dispatch({
-      type: CREATE_TASKS_REQ,
+      type: GET_VOTES_REQ,
     });
+    //get smartcontract
 
     const {
-      loadBlockchian: { accounts, todoList },
+      smartContract: { proposal },
+    } = getState();
+    //get account
+    const {
+      accountData: { account },
     } = getState();
 
-    todoList.methods
-      .createTask(content)
-      .send({ from: accounts })
-      .once("receipt", (receipt) => {
-        dispatch({
-          type: CREATE_TASKS_SUCCESS,
-          payload: null,
-        });
-      });
+    //get votes
+
+    const votes = await proposal.methods.getVote(account).call();
+    const yesVotes = await proposal.methods.votesForYes().call();
+    const noVotes = await proposal.methods.votesForNo().call();
+    const VOTE_FEE = await proposal.methods.VOTE_FEE().call();
+
+    const proposalId = await proposal.methods.proposalId().call();
+    dispatch({
+      type: GET_VOTES_RES,
+      payload: { votes, yesVotes, noVotes, proposalId, VOTE_FEE },
+    });
   } catch (error) {
-    console.log(`Error In Catch ${error}`);
+    console.log(error);
+    dispatch({
+      type: APP_ERROR,
+      payload: `getUserWallet error: ${JSON.stringify(error.message)}`,
+    });
   }
 };
 
-export const toggleCompleted = (taskId) => async (dispatch, getState) => {
+export const castVote = (content) => async (dispatch, getState) => {
   try {
     dispatch({
-      type: TOGGLE_TASKS_REQ,
+      type: CAST_VOTE_REQ,
     });
 
+    //get smartcontract
     const {
-      loadBlockchian: { accounts, todoList },
+      smartContract: { proposal },
     } = getState();
 
-    todoList.methods
-      .toggleCompleted(taskId)
-      .send({ from: accounts })
+    //get account
+    const {
+      accountData: { account },
+    } = getState();
+
+    //get transaction fee
+    const VOTE_FEE = await proposal.methods.VOTE_FEE().call();
+
+    //call vote function
+    proposal.methods
+      .vote(content)
+      .send({ from: account, value: VOTE_FEE })
       .once("receipt", (receipt) => {
         dispatch({
-          type: TOGGLE_TASKS_SUCCESS,
-          payload: null,
+          type: CAST_VOTE_RES,
+          payload: 1,
         });
       });
   } catch (error) {
-    console.log(`Error In Catch ${error}`);
+    console.log(error);
+    dispatch({
+      type: APP_ERROR,
+      payload: `getUserWallet error: ${JSON.stringify(error.message)}`,
+    });
+  }
+};
+
+export const cleanContract = () => async (dispatch, getState) => {
+  try {
+    const {
+      smartContract: { proposal },
+    } = getState();
+
+    const cleanResult = await proposal.methods.clean().call();
+
+    console.log("contarct clean was called");
+
+    console.log(cleanResult);
+  } catch (error) {
+    console.log(error);
+    dispatch({
+      type: APP_ERROR,
+      payload: `getUserWallet error: ${JSON.stringify(error.message)}`,
+    });
   }
 };

@@ -2,18 +2,22 @@ import { createStore, combineReducers, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
 import { composeWithDevTools } from "redux-devtools-extension";
 import {
-  blockChaiReducer,
-  createtaskReducer,
+  smartContractReducr,
   accountReducer,
+  votesReducer,
+  castVoteReducer,
 } from "./redux/reducer";
 
 const reducer = combineReducers({
-  loadBlockchian: blockChaiReducer,
+  smartContract: smartContractReducr,
   accountData: accountReducer,
-  createTask: createtaskReducer,
+  votes: votesReducer,
+  vote: castVoteReducer,
 });
 
-const initialState = [];
+const initialState = {
+  accountData: accountReducer,
+};
 
 const middleware = [thunk];
 
